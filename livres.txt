@@ -1,0 +1,29 @@
+Mon premier livre ajouté par : 
+{
+  "email": "ouamariyounes@gmail.com",
+  "password": "password123"
+}
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY2N2IzZTU4NjAwYjdiMDM5MzFhOTEiLCJpYXQiOjE3Mjc0MzI4MDMsImV4cCI6MTcyNzQzNjQwM30.CZJBAL8Scs8Iwk-k32o2P3lA14qVhuI1_0i85aonRnA"
+}
+
+
+
+Mon deuxième livre ajouté par :
+{
+  "email": "younesouamari59@gmail.com",
+  "password": "password123"
+}
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY2N2I0NzU4NjAwYjdiMDM5MzFhOTQiLCJpYXQiOjE3Mjc0Mjk0NDcsImV4cCI6MTcyNzQzMzA0N30.zDwjffKbKvaevi3jYoWD2mfWLkl3jyS2Sjbt3Mgfra4"
+}
+
+Mon 3ème livre ajouté par : 
+{
+  "email": "yoyo@gmail.com",
+  "password": "password123"
+}
+
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NmY2N2I1YzU4NjAwYjdiMDM5MzFhOTciLCJpYXQiOjE3Mjc0Mjk0NjgsImV4cCI6MTcyNzQzMzA2OH0.Tl7LyzQPvBJqjli8KdFAtpkW3Nud-CgjtdKedmIfzTc"
+}
