@@ -31,7 +31,7 @@ exports.addBook = async (req, res) => {
 
     // Convertir et redimensionner l'image en WebP
     await sharp(uploadedImagePath)
-      .resize({ width: 800 }) // Définir la largeur souhaitée (par exemple, 800px)
+      .resize({ width: 800 }) 
       .toFormat('webp')
       .toFile(outputImagePath);
 
