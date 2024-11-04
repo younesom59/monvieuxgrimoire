@@ -1,21 +1,20 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const validator = require('email-validator'); // Importer le validateur
+const bcrypt = require('bcryptjs');
+const validator = require('email-validator');
 
-// Schéma utilisateur avec validation de l'email
 const userSchema = new mongoose.Schema({
   email: {
     type: String,
-    required: [true, 'Email is required'],
+    required: [true, 'Email est requis'],
     unique: true,
     validate: {
       validator: function(v) {
-        return validator.validate(v);  // Utilise le validateur d'email
+        return validator.validate(v);
       },
-      message: props => `${props.value} is not a valid email address!`
+      message: props => `${props.value} n'est pas une adresse email valide !`
     }
   },
-  password: { type: String, required: [true, 'Password is required'] }
+  password: { type: String, required: [true, 'Mot de passe est requis'] }
 });
 
 // Hash le mot de passe avant de sauvegarder l'utilisateur

@@ -1,8 +1,7 @@
 const Book = require('../models/book');
 const fs = require('fs');
 const path = require('path');
-
-
+const sharp = require('sharp'); // Importer la bibliothèque sharp
 
 // Ajouter un livre avec une image
 exports.addBook = async (req, res) => {
@@ -23,6 +22,22 @@ exports.addBook = async (req, res) => {
 
     console.log('Données du livre après parsing :', bookData);
 
+    // Chemin vers le fichier image uploadé
+    const uploadedImagePath = req.file.path;
+
+    // Définir le nouveau nom et chemin pour l'image convertie
+    const filename = `${req.file.filename.split('.')[0]}.webp`;
+    const outputImagePath = path.join('uploads', filename);
+
+    // Convertir et redimensionner l'image en WebP
+    await sharp(uploadedImagePath)
+      .resize({ width: 800 }) // Définir la largeur souhaitée (par exemple, 800px)
+      .toFormat('webp')
+      .toFile(outputImagePath);
+
+    // Supprimer le fichier image original pour économiser de l'espace
+    fs.unlinkSync(uploadedImagePath);
+
     // Créer l'objet livre à partir des données parsées
     const book = new Book({
       title: bookData.title,
@@ -31,7 +46,7 @@ exports.addBook = async (req, res) => {
       genre: bookData.genre,
       ratings: bookData.ratings || [],
       averageRating: bookData.averageRating || 0,
-      imageUrl: `/uploads/${req.file.filename}`, // Utiliser le fichier uploadé
+      imageUrl: `/uploads/${filename}`, // Utiliser le fichier converti
       userId: req.user.userId // Ajoute l'ID de l'utilisateur connecté
     });
 
@@ -85,7 +100,6 @@ exports.addRating = async (req, res) => {
   }
 };
 
-
 // Récupérer tous les livres
 exports.getBooks = async (req, res) => {
   try {
@@ -112,7 +126,6 @@ exports.getBookById = async (req, res) => {
   }
 };
 
-
 // PUT - Modifier un livre (seul le propriétaire peut le modifier)
 exports.updateBook = async (req, res) => {
   const { id } = req.params;
@@ -124,7 +137,7 @@ exports.updateBook = async (req, res) => {
       return res.status(404).json({ message: 'Livre non trouvé' });
     }
 
-    //  logs pour vérifier les IDs
+    // Logs pour vérifier les IDs
     console.log('Book User ID:', book.userId);
     console.log('Connected User ID:', req.user.userId);
 
@@ -134,17 +147,34 @@ exports.updateBook = async (req, res) => {
     }
 
     // Supprimer l'ancienne image si une nouvelle image est téléchargée
-    if (req.file && book.imageUrl) {
-      const oldImagePath = path.join(__dirname, '..', 'uploads', path.basename(book.imageUrl));
-      fs.access(oldImagePath, fs.constants.F_OK, (err) => {
-        if (!err) {
-          fs.unlink(oldImagePath, (err) => {
-            if (err) {
-              console.error('Erreur lors de la suppression de l\'ancienne image :', err);
-            }
-          });
-        }
-      });
+    if (req.file) {
+      if (book.imageUrl) {
+        const oldImagePath = path.join('uploads', path.basename(book.imageUrl));
+        fs.access(oldImagePath, fs.constants.F_OK, (err) => {
+          if (!err) {
+            fs.unlink(oldImagePath, (err) => {
+              if (err) {
+                console.error('Erreur lors de la suppression de l\'ancienne image :', err);
+              }
+            });
+          }
+        });
+      }
+
+      // Traiter la nouvelle image
+      const uploadedImagePath = req.file.path;
+      const filename = `${req.file.filename.split('.')[0]}.webp`;
+      const outputImagePath = path.join('uploads', filename);
+
+      await sharp(uploadedImagePath)
+        .resize({ width: 800 }) // Même taille que précédemment
+        .toFormat('webp')
+        .toFile(outputImagePath);
+
+      fs.unlinkSync(uploadedImagePath);
+
+      // Mettre à jour le chemin de l'image
+      book.imageUrl = `/uploads/${filename}`;
     }
 
     // Mettre à jour les informations du livre
@@ -152,9 +182,6 @@ exports.updateBook = async (req, res) => {
     book.author = req.body.author || book.author;
     book.year = req.body.year || book.year;
     book.genre = req.body.genre || book.genre;
-    if (req.file) {
-      book.imageUrl = `/uploads/${req.file.filename}`;
-    }
 
     await book.save();
     res.status(200).json({ message: 'Livre modifié avec succès', book });
@@ -162,7 +189,6 @@ exports.updateBook = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
 
 // DELETE - Supprimer un livre (seul le propriétaire peut le supprimer)
 exports.deleteBook = async (req, res) => {
@@ -175,9 +201,9 @@ exports.deleteBook = async (req, res) => {
       return res.status(404).json({ message: 'Livre non trouvé' });
     }
 
-        //  logs pour vérifier les IDs
-        console.log('Book User ID:', book.userId);
-        console.log('Connected User ID:', req.user.userId);
+    // Logs pour vérifier les IDs
+    console.log('Book User ID:', book.userId);
+    console.log('Connected User ID:', req.user.userId);
 
     // Vérifier si l'utilisateur connecté est bien le propriétaire du livre
     if (book.userId !== userId) {
@@ -186,7 +212,7 @@ exports.deleteBook = async (req, res) => {
 
     // Supprimer l'image du livre s'il y en a une
     if (book.imageUrl) {
-      const imagePath = path.join(__dirname, '..', 'uploads', path.basename(book.imageUrl));
+      const imagePath = path.join('uploads', path.basename(book.imageUrl));
       fs.access(imagePath, fs.constants.F_OK, (err) => {
         if (!err) {
           fs.unlink(imagePath, (err) => {
@@ -205,8 +231,6 @@ exports.deleteBook = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-
-
 
 // Récupérer les 3 livres avec la meilleure note moyenne
 exports.getBestRatings = async (req, res) => {

@@ -2,7 +2,7 @@
 require('dotenv').config(); // Charger les variables d'environnement depuis .env
 const User = require('../models/user');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs'); // Assurez-vous d'utiliser bcryptjs si c'est celui que vous avez choisi
 const emailValidator = require('email-validator');
 const PasswordValidator = require('password-validator');
 
@@ -14,17 +14,17 @@ const passwordSchema = new PasswordValidator();
 passwordSchema
   .is().min(8)            // Minimum 8 caractères
   .is().max(100)          // Maximum 100 caractères
-  .has().uppercase()      // au moins une majuscule
-  .has().lowercase()      // au moins une minuscule
-  .has().digits()         // u moins un chiffre
+  .has().uppercase()      // Doit contenir au moins une majuscule
+  .has().lowercase()      // Doit contenir au moins une minuscule
+  .has().digits()         // Doit contenir au moins un chiffre
   .has().not().spaces();  // Ne doit pas contenir d'espaces
 
 // Inscription d'un nouvel utilisateur
 exports.signup = async (req, res) => {
   const { email, password } = req.body;
 
-  console.log("Email reçu :", email); // Log pour vérifier l'email reçu
-  console.log("Mot de passe reçu :", password); // Log pour vérifier le mot de passe reçu
+  console.log("Email reçu pour l'inscription :", email);
+  console.log("Mot de passe reçu pour l'inscription :", password);
 
   // Vérification du format de l'email
   if (!emailValidator.validate(email)) {
@@ -43,11 +43,8 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ message: 'Email déjà utilisé' });
     }
 
-    // Hacher le mot de passe avant de le sauvegarder
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Créer un nouvel utilisateur avec le mot de passe haché
-    const user = new User({ email, password: hashedPassword });
+    // Créer un nouvel utilisateur avec le mot de passe en clair (il sera haché dans le modèle)
+    const user = new User({ email, password });
     await user.save();
 
     // Générer un token JWT
@@ -64,19 +61,25 @@ exports.signup = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
-  console.log("Email reçu :", email); // Log pour vérifier l'email reçu
-  console.log("Mot de passe reçu :", password); // Log pour vérifier le mot de passe reçu
+  console.log("Email reçu :", email);
+  console.log("Mot de passe reçu :", password);
 
   try {
     // Trouver l'utilisateur par email
     const user = await User.findOne({ email });
     if (!user) {
+      console.log("Utilisateur non trouvé");
       return res.status(400).json({ message: 'Identifiants incorrects' });
     }
 
+    console.log("Utilisateur trouvé :", user);
+
     // Comparer le mot de passe
     const isPasswordValid = await bcrypt.compare(password, user.password);
+    console.log("Résultat de la comparaison de mot de passe :", isPasswordValid);
+
     if (!isPasswordValid) {
+      console.log("Mot de passe incorrect");
       return res.status(400).json({ message: 'Identifiants incorrects' });
     }
 

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// Schema for the book
+// Schema pour le livre
 const bookSchema = new mongoose.Schema({
   title: { type: String, required: true },
   author: { type: String, required: true },
@@ -12,7 +12,7 @@ const bookSchema = new mongoose.Schema({
   }],
   averageRating: { type: Number, default: 0 },
   imageUrl: { type: String },
-  userId: { type: String, required: true } // Assure-toi que ce champ est présent
+  userId: { type: String, required: true } 
 });
 
 const Book = mongoose.model('Book', bookSchema);
